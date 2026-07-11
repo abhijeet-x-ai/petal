@@ -1,0 +1,4 @@
+# Petal says hello
+name = "world"
+print(f"Hello, {name}!")
+print("1 + 2 =", 1 + 2)

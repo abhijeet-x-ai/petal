@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Petal — a small language that grows with you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1713;
+    --panel: #16201a;
+    --panel-alt: #1b271f;
+    --border: #2a372d;
+    --border-soft: #223026;
+    --text: #e9efe8;
+    --text-dim: #93a89b;
+    --text-faint: #5e7267;
+    --petal: #ef6088;
+    --petal-dim: #7a3247;
+    --mint: #7fe3b4;
+    --amber: #ffb454;
+    --font-display: "Space Grotesk", sans-serif;
+    --font-body: "IBM Plex Sans", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  ::selection { background: var(--petal-dim); color: #fff; }
+
+  button:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 2px;
+  }
+
+  /* ---------- topbar ---------- */
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(239,96,136,0.05), transparent);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .brand-name .dot { color: var(--petal); }
+
+  .tagline {
+    font-size: 13px;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+
+  .status {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--amber);
+    transition: background .3s ease;
+  }
+  .status-dot.ready { background: var(--mint); }
+
+  /* ---------- workspace ---------- */
+
+  .workspace {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 1px;
+    background: var(--border);
+    min-height: 0;
+  }
+
+  @media (max-width: 860px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  .pane {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--panel);
+    flex-wrap: wrap;
+  }
+
+  .examples { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--panel-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .chip:hover { border-color: var(--petal); color: var(--text); }
+
+  .actions { display: flex; gap: 8px; align-items: center; }
+
+  .run-btn {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    color: #0f1713;
+    background: var(--mint);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform .1s ease, opacity .15s ease;
+  }
+  .run-btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .run-btn:disabled { opacity: .45; cursor: progress; }
+
+  .ghost-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .ghost-btn:hover { border-color: var(--text-dim); color: var(--text); }
+
+  .petal-icon svg { display: block; width: 18px; height: 18px; }
+  .petal-icon .petal-leaf { fill: #0f1713; transition: fill .4s ease; }
+  .petal-icon .petal-center { fill: rgba(15,23,19,0.35); }
+
+  .petal-icon.state-error .petal-leaf { fill: #0f1713; }
+
+  .bloom-success svg { animation: bloomSuccess .55s ease; }
+  .bloom-error svg { animation: bloomError .55s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bloom-success svg, .bloom-error svg { animation: none; }
+  }
+
+  @keyframes bloomSuccess {
+    0% { transform: scale(1) rotate(0deg); }
+    45% { transform: scale(1.3) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes bloomError {
+    0% { transform: scale(1) rotate(0deg); }
+    45% { transform: scale(0.82) rotate(-12deg) translateY(2px); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  /* ---------- editor ---------- */
+
+  #code {
+    flex: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.65;
+    padding: 18px 20px;
+    tab-size: 4;
+    min-height: 260px;
+  }
+
+  /* ---------- output ---------- */
+
+  .output-pane .toolbar { justify-content: space-between; }
+
+  #output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 20px;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    background: var(--panel);
+  }
+
+  #output .line { white-space: pre-wrap; word-break: break-word; }
+  #output .line.error { color: var(--amber); }
+  #output .line.placeholder { color: var(--text-faint); font-style: italic; }
+  #output .line.system { color: var(--text-faint); }
+
+  /* ---------- footer ---------- */
+
+  .footer {
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-faint);
+    text-align: center;
+  }
+
+  .footer a { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name">petal<span class="dot">.</span></span>
+      <span class="tagline">a small language that grows with you</span>
+    </div>
+    <div class="status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">germinating…</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="pane editor-pane">
+      <div class="toolbar">
+        <div class="examples" id="examples">
+          <button class="chip" data-example="hello">hello</button>
+          <button class="chip" data-example="fizzbuzz">fizzbuzz</button>
+          <button class="chip" data-example="fibonacci">fibonacci</button>
+          <button class="chip" data-example="data">lists &amp; dicts</button>
+        </div>
+        <div class="actions">
+          <button class="run-btn" id="run-btn" disabled>
+            <span class="petal-icon" id="petal-icon">
+              <svg viewBox="0 0 32 32">
+                <g>
+                  <ellipse class="petal-leaf" cx="16" cy="8"  rx="4.4" ry="8.2" transform="rotate(0 16 16)"/>
+                  <ellipse class="petal-leaf" cx="16" cy="8"  rx="4.4" ry="8.2" transform="rotate(72 16 16)"/>
+                  <ellipse class="petal-leaf" cx="16" cy="8"  rx="4.4" ry="8.2" transform="rotate(144 16 16)"/>
+                  <ellipse class="petal-leaf" cx="16" cy="8"  rx="4.4" ry="8.2" transform="rotate(216 16 16)"/>
+                  <ellipse class="petal-leaf" cx="16" cy="8"  rx="4.4" ry="8.2" transform="rotate(288 16 16)"/>
+                  <circle class="petal-center" cx="16" cy="16" r="3.6" />
+                </g>
+              </svg>
+            </span>
+            Run
+          </button>
+          <button class="ghost-btn" id="clear-btn">Clear output</button>
+        </div>
+      </div>
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    </section>
+
+    <section class="pane output-pane">
+      <div class="toolbar">
+        <span style="font-family:var(--font-mono); font-size:12px; color:var(--text-dim);">Output</span>
+      </div>
+      <div id="output"><div class="line placeholder">Press Run to see what grows.</div></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Petal runs entirely in your browser via Pyodide (Python compiled to WebAssembly). Nothing you write here is sent anywhere.
+  </footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.28.3/pyodide.js"></script>
+<script>
+const PETAL_SOURCE = "#!/usr/bin/env python3\n\"\"\"\nPetal -- a small, Python-flavored scripting language.\n\nSingle-file implementation: lexer, parser, tree-walking interpreter,\nand a CLI/REPL. See README.md for the language reference.\n\nUsage:\n    python3 petal.py script.petal      # run a file\n    python3 petal.py                   # start the REPL\n\"\"\"\n\nimport sys\n\n\n# =====================================================================\n# Errors\n# =====================================================================\n\nclass PetalError(Exception):\n    def __init__(self, message, line=None):\n        self.message = message\n        self.line = line\n        super().__init__(self.format())\n\n    def format(self):\n        if self.line is not None:\n            return f\"line {self.line}: {self.message}\"\n        return self.message\n\n\nclass PetalSyntaxError(PetalError):\n    pass\n\n\nclass PetalRuntimeError(PetalError):\n    pass\n\n\n# =====================================================================\n# Lexer\n# =====================================================================\n\nKEYWORDS = {\n    \"if\", \"elif\", \"else\", \"while\", \"for\", \"in\", \"def\", \"return\",\n    \"break\", \"continue\", \"and\", \"or\", \"not\", \"True\", \"False\", \"None\",\n}\n\nTWO_CHAR_OPS = (\"==\", \"!=\", \"<=\", \">=\", \"//\", \"+=\", \"-=\", \"*=\", \"/=\", \"%=\")\nSINGLE_CHAR_OPS = set(\"+-*/%<>=,:.()[]{}!\")\n\n\nclass Token:\n    __slots__ = (\"type\", \"value\", \"line\")\n\n    def __init__(self, type_, value, line):\n        self.type = type_\n        self.value = value\n        self.line = line\n\n    def __repr__(self):\n        return f\"Token({self.type!r}, {self.value!r}, line={self.line})\"\n\n\nclass Lexer:\n    def __init__(self, source):\n        self.lines = source.split(\"\\n\")\n        self.tokens = []\n        self.indents = [0]\n        self.paren_depth = 0\n\n    def error(self, msg, line):\n        raise PetalSyntaxError(msg, line)\n\n    def tokenize(self):\n        for lineno, raw_line in enumerate(self.lines, start=1):\n            self.tokenize_line(raw_line, lineno)\n        last_line = len(self.lines) + 1\n        while len(self.indents) > 1:\n            self.indents.pop()\n            self.tokens.append(Token(\"DEDENT\", None, last_line))\n        self.tokens.append(Token(\"EOF\", None, last_line))\n        return self.tokens\n\n    def tokenize_line(self, raw_line, lineno):\n        i = 0\n        n = len(raw_line)\n\n        if self.paren_depth == 0:\n            indent = 0\n            while i < n and raw_line[i] in (\" \", \"\\t\"):\n                if raw_line[i] == \"\\t\":\n                    self.error(\"tabs are not allowed for indentation -- use spaces\", lineno)\n                indent += 1\n                i += 1\n            rest = raw_line[i:]\n            if rest.strip() == \"\" or rest.strip().startswith(\"#\"):\n                return\n            if indent > self.indents[-1]:\n                self.indents.append(indent)\n                self.tokens.append(Token(\"INDENT\", None, lineno))\n            else:\n                while indent < self.indents[-1]:\n                    self.indents.pop()\n                    self.tokens.append(Token(\"DEDENT\", None, lineno))\n                if indent != self.indents[-1]:\n                    self.error(\"inconsistent indentation\", lineno)\n        else:\n            if raw_line.strip() == \"\":\n                return\n\n        while i < n:\n            c = raw_line[i]\n            if c in (\" \", \"\\t\"):\n                i += 1\n                continue\n            if c == \"#\":\n                break\n            if c.isdigit():\n                j = i\n                is_float = False\n                while j < n and (raw_line[j].isdigit() or raw_line[j] == \".\"):\n                    if raw_line[j] == \".\":\n                        if is_float or j + 1 >= n or not raw_line[j + 1].isdigit():\n                            break\n                        is_float = True\n                    j += 1\n                text = raw_line[i:j]\n                value = float(text) if is_float else int(text)\n                self.tokens.append(Token(\"NUMBER\", value, lineno))\n                i = j\n                continue\n            if c.isalpha() or c == \"_\":\n                j = i\n                while j < n and (raw_line[j].isalnum() or raw_line[j] == \"_\"):\n                    j += 1\n                text = raw_line[i:j]\n                if (c in (\"f\", \"F\")) and j - i == 1 and j < n and raw_line[j] in (\"'\", '\"'):\n                    token, i = self.read_string(raw_line, j, lineno, is_fstring=True)\n                    self.tokens.append(token)\n                    continue\n                if text in KEYWORDS:\n                    self.tokens.append(Token(text.upper(), text, lineno))\n                else:\n                    self.tokens.append(Token(\"NAME\", text, lineno))\n                i = j\n                continue\n            if c in (\"'\", '\"'):\n                token, i = self.read_string(raw_line, i, lineno, is_fstring=False)\n                self.tokens.append(token)\n                continue\n            if raw_line[i:i + 2] == \"**\":\n                self.tokens.append(Token(\"**\", \"**\", lineno))\n                i += 2\n                continue\n            two = raw_line[i:i + 2]\n            if two in TWO_CHAR_OPS:\n                self.tokens.append(Token(two, two, lineno))\n                i += 2\n                continue\n            if c in SINGLE_CHAR_OPS:\n                if c in \"([{\":\n                    self.paren_depth += 1\n                elif c in \")]}\":\n                    self.paren_depth = max(0, self.paren_depth - 1)\n                self.tokens.append(Token(c, c, lineno))\n                i += 1\n                continue\n            self.error(f\"unexpected character {c!r}\", lineno)\n\n        if self.paren_depth == 0:\n            if self.tokens and self.tokens[-1].type not in (\"NEWLINE\", \"INDENT\", \"DEDENT\"):\n                self.tokens.append(Token(\"NEWLINE\", None, lineno))\n\n    def read_string(self, raw_line, i, lineno, is_fstring):\n        quote = raw_line[i]\n        i += 1\n        n = len(raw_line)\n        buf = []\n        while i < n and raw_line[i] != quote:\n            ch = raw_line[i]\n            if ch == \"\\\\\" and i + 1 < n:\n                nxt = raw_line[i + 1]\n                escapes = {\"n\": \"\\n\", \"t\": \"\\t\", \"\\\\\": \"\\\\\", '\"': '\"', \"'\": \"'\", \"{\": \"{\", \"}\": \"}\"}\n                buf.append(escapes.get(nxt, nxt))\n                i += 2\n                continue\n            buf.append(ch)\n            i += 1\n        if i >= n:\n            self.error(\"unterminated string literal\", lineno)\n        i += 1\n        text = \"\".join(buf)\n        ttype = \"FSTRING\" if is_fstring else \"STRING\"\n        return Token(ttype, text, lineno), i\n\n\n# =====================================================================\n# AST Nodes\n# =====================================================================\n\nclass Node:\n    pass\n\n\nclass Program(Node):\n    def __init__(self, statements):\n        self.statements = statements\n\n\nclass NumLit(Node):\n    def __init__(self, value, line):\n        self.value, self.line = value, line\n\n\nclass StrLit(Node):\n    def __init__(self, value, line):\n        self.value, self.line = value, line\n\n\nclass FStrLit(Node):\n    def __init__(self, parts, line):\n        self.parts, self.line = parts, line\n\n\nclass BoolLit(Node):\n    def __init__(self, value, line):\n        self.value, self.line = value, line\n\n\nclass NoneLit(Node):\n    def __init__(self, line):\n        self.line = line\n\n\nclass ListLit(Node):\n    def __init__(self, elements, line):\n        self.elements, self.line = elements, line\n\n\nclass DictLit(Node):\n    def __init__(self, pairs, line):\n        self.pairs, self.line = pairs, line\n\n\nclass Var(Node):\n    def __init__(self, name, line):\n        self.name, self.line = name, line\n\n\nclass Assign(Node):\n    def __init__(self, target, value, line):\n        self.target, self.value, self.line = target, value, line\n\n\nclass AugAssign(Node):\n    def __init__(self, target, op, value, line):\n        self.target, self.op, self.value, self.line = target, op, value, line\n\n\nclass BinOp(Node):\n    def __init__(self, left, op, right, line):\n        self.left, self.op, self.right, self.line = left, op, right, line\n\n\nclass LogicalOp(Node):\n    def __init__(self, left, op, right, line):\n        self.left, self.op, self.right, self.line = left, op, right, line\n\n\nclass UnaryOp(Node):\n    def __init__(self, op, operand, line):\n        self.op, self.operand, self.line = op, operand, line\n\n\nclass Call(Node):\n    def __init__(self, callee, args, line):\n        self.callee, self.args, self.line = callee, args, line\n\n\nclass Index(Node):\n    def __init__(self, obj, index, line):\n        self.obj, self.index, self.line = obj, index, line\n\n\nclass Slice(Node):\n    def __init__(self, obj, start, stop, line):\n        self.obj, self.start, self.stop, self.line = obj, start, stop, line\n\n\nclass Attribute(Node):\n    def __init__(self, obj, name, line):\n        self.obj, self.name, self.line = obj, name, line\n\n\nclass If(Node):\n    def __init__(self, cond, body, elifs, orelse, line):\n        self.cond, self.body, self.elifs, self.orelse, self.line = cond, body, elifs, orelse, line\n\n\nclass While(Node):\n    def __init__(self, cond, body, line):\n        self.cond, self.body, self.line = cond, body, line\n\n\nclass For(Node):\n    def __init__(self, var, iterable, body, line):\n        self.var, self.iterable, self.body, self.line = var, iterable, body, line\n\n\nclass FunctionDef(Node):\n    def __init__(self, name, params, body, line):\n        self.name, self.params, self.body, self.line = name, params, body, line\n\n\nclass Return(Node):\n    def __init__(self, value, line):\n        self.value, self.line = value, line\n\n\nclass Break(Node):\n    def __init__(self, line):\n        self.line = line\n\n\nclass Continue(Node):\n    def __init__(self, line):\n        self.line = line\n\n\nclass ExprStmt(Node):\n    def __init__(self, expr, line):\n        self.expr, self.line = expr, line\n\n\n# =====================================================================\n# Parser\n# =====================================================================\n\nclass Parser:\n    def __init__(self, tokens):\n        self.tokens = tokens\n        self.pos = 0\n\n    def peek(self, offset=0):\n        idx = min(self.pos + offset, len(self.tokens) - 1)\n        return self.tokens[idx]\n\n    def at(self, *types):\n        return self.peek().type in types\n\n    def advance(self):\n        tok = self.tokens[self.pos]\n        if self.pos < len(self.tokens) - 1:\n            self.pos += 1\n        return tok\n\n    def expect(self, type_, msg=None):\n        if not self.at(type_):\n            tok = self.peek()\n            raise PetalSyntaxError(msg or f\"expected {type_!r} but found {tok.type!r}\", tok.line)\n        return self.advance()\n\n    def skip_newlines(self):\n        while self.at(\"NEWLINE\"):\n            self.advance()\n\n    # ---- program / blocks ------------------------------------------------\n\n    def parse_program(self):\n        stmts = []\n        self.skip_newlines()\n        while not self.at(\"EOF\"):\n            stmts.append(self.parse_statement())\n            self.skip_newlines()\n        return Program(stmts)\n\n    def parse_block(self):\n        self.expect(\"NEWLINE\")\n        self.expect(\"INDENT\")\n        stmts = []\n        self.skip_newlines()\n        while not self.at(\"DEDENT\") and not self.at(\"EOF\"):\n            stmts.append(self.parse_statement())\n            self.skip_newlines()\n        self.expect(\"DEDENT\")\n        return stmts\n\n    # ---- statements --------------------------------------------------\n\n    def parse_statement(self):\n        tok = self.peek()\n        if tok.type == \"IF\":\n            return self.parse_if()\n        if tok.type == \"WHILE\":\n            return self.parse_while()\n        if tok.type == \"FOR\":\n            return self.parse_for()\n        if tok.type == \"DEF\":\n            return self.parse_funcdef()\n        if tok.type == \"RETURN\":\n            return self.parse_return()\n        if tok.type == \"BREAK\":\n            self.advance()\n            self.expect(\"NEWLINE\")\n            return Break(tok.line)\n        if tok.type == \"CONTINUE\":\n            self.advance()\n            self.expect(\"NEWLINE\")\n            return Continue(tok.line)\n        return self.parse_simple_stmt()\n\n    def parse_if(self):\n        line = self.advance().line\n        cond = self.parse_expression()\n        self.expect(\":\")\n        body = self.parse_block()\n        elifs = []\n        while self.at(\"ELIF\"):\n            self.advance()\n            econd = self.parse_expression()\n            self.expect(\":\")\n            ebody = self.parse_block()\n            elifs.append((econd, ebody))\n        orelse = []\n        if self.at(\"ELSE\"):\n            self.advance()\n            self.expect(\":\")\n            orelse = self.parse_block()\n        return If(cond, body, elifs, orelse, line)\n\n    def parse_while(self):\n        line = self.advance().line\n        cond = self.parse_expression()\n        self.expect(\":\")\n        body = self.parse_block()\n        return While(cond, body, line)\n\n    def parse_for(self):\n        line = self.advance().line\n        varname = self.expect(\"NAME\").value\n        self.expect(\"IN\")\n        iterable = self.parse_expression()\n        self.expect(\":\")\n        body = self.parse_block()\n        return For(varname, iterable, body, line)\n\n    def parse_funcdef(self):\n        line = self.advance().line\n        name = self.expect(\"NAME\").value\n        self.expect(\"(\")\n        params = []\n        if not self.at(\")\"):\n            params.append(self.expect(\"NAME\").value)\n            while self.at(\",\"):\n                self.advance()\n                params.append(self.expect(\"NAME\").value)\n        self.expect(\")\")\n        self.expect(\":\")\n        body = self.parse_block()\n        return FunctionDef(name, params, body, line)\n\n    def parse_return(self):\n        line = self.advance().line\n        value = None if self.at(\"NEWLINE\") else self.parse_expression()\n        self.expect(\"NEWLINE\")\n        return Return(value, line)\n\n    def parse_simple_stmt(self):\n        expr = self.parse_expression()\n        line = expr.line\n        if self.at(\"=\"):\n            self.advance()\n            value = self.parse_expression()\n            self.check_assignable(expr)\n            self.expect(\"NEWLINE\")\n            return Assign(expr, value, line)\n        if self.at(\"+=\", \"-=\", \"*=\", \"/=\", \"%=\"):\n            op = self.advance().type[0]\n            value = self.parse_expression()\n            self.check_assignable(expr)\n            self.expect(\"NEWLINE\")\n            return AugAssign(expr, op, value, line)\n        self.expect(\"NEWLINE\")\n        return ExprStmt(expr, line)\n\n    def check_assignable(self, node):\n        if not isinstance(node, (Var, Index)):\n            raise PetalSyntaxError(\"invalid assignment target\", getattr(node, \"line\", None))\n\n    # ---- expressions (precedence climbing) ----------------------------\n\n    def parse_expression(self):\n        return self.parse_or()\n\n    def parse_or(self):\n        left = self.parse_and()\n        while self.at(\"OR\"):\n            line = self.advance().line\n            right = self.parse_and()\n            left = LogicalOp(left, \"or\", right, line)\n        return left\n\n    def parse_and(self):\n        left = self.parse_not()\n        while self.at(\"AND\"):\n            line = self.advance().line\n            right = self.parse_not()\n            left = LogicalOp(left, \"and\", right, line)\n        return left\n\n    def parse_not(self):\n        if self.at(\"NOT\"):\n            line = self.advance().line\n            operand = self.parse_not()\n            return UnaryOp(\"not\", operand, line)\n        return self.parse_comparison()\n\n    def parse_comparison(self):\n        left = self.parse_addition()\n        while True:\n            if self.at(\"NOT\") and self.peek(1).type == \"IN\":\n                self.advance()\n                self.advance()\n                right = self.parse_addition()\n                left = BinOp(left, \"not in\", right, left.line)\n            elif self.at(\"IN\"):\n                self.advance()\n                right = self.parse_addition()\n                left = BinOp(left, \"in\", right, left.line)\n            elif self.at(\"==\", \"!=\", \"<\", \">\", \"<=\", \">=\"):\n                op = self.advance().type\n                right = self.parse_addition()\n                left = BinOp(left, op, right, left.line)\n            else:\n                break\n        return left\n\n    def parse_addition(self):\n        left = self.parse_term()\n        while self.at(\"+\", \"-\"):\n            op = self.advance().type\n            right = self.parse_term()\n            left = BinOp(left, op, right, left.line)\n        return left\n\n    def parse_term(self):\n        left = self.parse_unary()\n        while self.at(\"*\", \"/\", \"//\", \"%\"):\n            op = self.advance().type\n            right = self.parse_unary()\n            left = BinOp(left, op, right, left.line)\n        return left\n\n    def parse_unary(self):\n        if self.at(\"-\", \"+\"):\n            op = self.advance().type\n            operand = self.parse_unary()\n            return UnaryOp(op, operand, operand.line)\n        return self.parse_power()\n\n    def parse_power(self):\n        base = self.parse_postfix()\n        if self.at(\"**\"):\n            line = self.advance().line\n            exponent = self.parse_unary()\n            return BinOp(base, \"**\", exponent, line)\n        return base\n\n    def parse_postfix(self):\n        expr = self.parse_primary()\n        while True:\n            if self.at(\"(\"):\n                line = self.advance().line\n                args = []\n                if not self.at(\")\"):\n                    args.append(self.parse_expression())\n                    while self.at(\",\"):\n                        self.advance()\n                        args.append(self.parse_expression())\n                self.expect(\")\")\n                expr = Call(expr, args, line)\n            elif self.at(\"[\"):\n                line = self.advance().line\n                start = None if self.at(\":\") else self.parse_expression()\n                if self.at(\":\"):\n                    self.advance()\n                    stop = None if self.at(\"]\") else self.parse_expression()\n                    self.expect(\"]\")\n                    expr = Slice(expr, start, stop, line)\n                else:\n                    self.expect(\"]\")\n                    expr = Index(expr, start, line)\n            elif self.at(\".\"):\n                self.advance()\n                name_tok = self.expect(\"NAME\")\n                expr = Attribute(expr, name_tok.value, name_tok.line)\n            else:\n                break\n        return expr\n\n    def parse_primary(self):\n        tok = self.peek()\n        if tok.type == \"NUMBER\":\n            self.advance(); return NumLit(tok.value, tok.line)\n        if tok.type == \"STRING\":\n            self.advance(); return StrLit(tok.value, tok.line)\n        if tok.type == \"FSTRING\":\n            self.advance(); return self.parse_fstring(tok.value, tok.line)\n        if tok.type == \"TRUE\":\n            self.advance(); return BoolLit(True, tok.line)\n        if tok.type == \"FALSE\":\n            self.advance(); return BoolLit(False, tok.line)\n        if tok.type == \"NONE\":\n            self.advance(); return NoneLit(tok.line)\n        if tok.type == \"NAME\":\n            self.advance(); return Var(tok.value, tok.line)\n        if tok.type == \"(\":\n            self.advance()\n            expr = self.parse_expression()\n            self.expect(\")\")\n            return expr\n        if tok.type == \"[\":\n            self.advance()\n            elements = []\n            if not self.at(\"]\"):\n                elements.append(self.parse_expression())\n                while self.at(\",\"):\n                    self.advance()\n                    if self.at(\"]\"):\n                        break\n                    elements.append(self.parse_expression())\n            self.expect(\"]\")\n            return ListLit(elements, tok.line)\n        if tok.type == \"{\":\n            self.advance()\n            pairs = []\n            if not self.at(\"}\"):\n                k = self.parse_expression()\n                self.expect(\":\")\n                v = self.parse_expression()\n                pairs.append((k, v))\n                while self.at(\",\"):\n                    self.advance()\n                    if self.at(\"}\"):\n                        break\n                    k = self.parse_expression()\n                    self.expect(\":\")\n                    v = self.parse_expression()\n                    pairs.append((k, v))\n            self.expect(\"}\")\n            return DictLit(pairs, tok.line)\n        raise PetalSyntaxError(f\"unexpected token {tok.type!r}\", tok.line)\n\n    def parse_fstring(self, text, line):\n        parts = []\n        buf = []\n        i, n = 0, len(text)\n        while i < n:\n            c = text[i]\n            if c == \"{\":\n                if buf:\n                    parts.append((\"str\", \"\".join(buf))); buf = []\n                depth = 1\n                j = i + 1\n                start = j\n                while j < n and depth > 0:\n                    if text[j] == \"{\":\n                        depth += 1\n                    elif text[j] == \"}\":\n                        depth -= 1\n                        if depth == 0:\n                            break\n                    j += 1\n                if depth != 0:\n                    raise PetalSyntaxError(\"unterminated '{' in f-string\", line)\n                expr_src = text[start:j]\n                sub_tokens = Lexer(expr_src).tokenize()\n                expr_node = Parser(sub_tokens).parse_expression()\n                parts.append((\"expr\", expr_node))\n                i = j + 1\n            else:\n                buf.append(c)\n                i += 1\n        if buf:\n            parts.append((\"str\", \"\".join(buf)))\n        return FStrLit(parts, line)\n\n\n# =====================================================================\n# Runtime\n# =====================================================================\n\nclass PetalFunction:\n    def __init__(self, name, params, body, closure):\n        self.name, self.params, self.body, self.closure = name, params, body, closure\n\n    def __repr__(self):\n        return f\"<function {self.name}>\"\n\n\nclass Environment:\n    def __init__(self, parent=None):\n        self.vars = {}\n        self.parent = parent\n\n    def get(self, name, line):\n        env = self\n        while env is not None:\n            if name in env.vars:\n                return env.vars[name]\n            env = env.parent\n        raise PetalRuntimeError(f\"name '{name}' is not defined\", line)\n\n    def assign(self, name, value):\n        self.vars[name] = value\n\n\nclass BreakSignal(Exception):\n    pass\n\n\nclass ContinueSignal(Exception):\n    pass\n\n\nclass ReturnSignal(Exception):\n    def __init__(self, value):\n        self.value = value\n\n\nclass Interpreter:\n    def __init__(self, input_fn=None, output_fn=None):\n        self.globals = Environment()\n        self.input_fn = input_fn or (lambda prompt=\"\": input(prompt))\n        self.output_fn = output_fn or (lambda text: print(text))\n        self.setup_builtins()\n\n    # ---- display / coercion helpers -----------------------------------\n\n    def petal_repr(self, value):\n        if value is None:\n            return \"None\"\n        if value is True:\n            return \"True\"\n        if value is False:\n            return \"False\"\n        if isinstance(value, str):\n            return value\n        if isinstance(value, float):\n            return repr(value)\n        if isinstance(value, list):\n            return \"[\" + \", \".join(self.petal_debug(v) for v in value) + \"]\"\n        if isinstance(value, dict):\n            items = \", \".join(f\"{self.petal_debug(k)}: {self.petal_debug(v)}\" for k, v in value.items())\n            return \"{\" + items + \"}\"\n        if isinstance(value, range):\n            return f\"range({value.start}, {value.stop}, {value.step})\"\n        if isinstance(value, PetalFunction):\n            return f\"<function {value.name}>\"\n        return str(value)\n\n    def petal_debug(self, value):\n        if isinstance(value, str):\n            return f'\"{value}\"'\n        return self.petal_repr(value)\n\n    def is_truthy(self, value):\n        if value is None or value is False:\n            return False\n        if value is True:\n            return True\n        if isinstance(value, (int, float, str, list, dict)):\n            return len(value) != 0 if isinstance(value, (str, list, dict)) else value != 0\n        return True\n\n    def type_name(self, value):\n        if value is None: return \"None\"\n        if isinstance(value, bool): return \"bool\"\n        if isinstance(value, int): return \"int\"\n        if isinstance(value, float): return \"float\"\n        if isinstance(value, str): return \"str\"\n        if isinstance(value, list): return \"list\"\n        if isinstance(value, dict): return \"dict\"\n        if isinstance(value, range): return \"range\"\n        if isinstance(value, PetalFunction): return \"function\"\n        return type(value).__name__\n\n    # ---- built-ins ------------------------------------------------------\n\n    def setup_builtins(self):\n        def b_print(*args):\n            self.output_fn(\" \".join(self.petal_repr(a) for a in args))\n            return None\n\n        def b_len(x):\n            try:\n                return len(x)\n            except TypeError:\n                raise PetalRuntimeError(f\"object of type '{self.type_name(x)}' has no len()\")\n\n        def b_str(x=\"\"):\n            return self.petal_repr(x)\n\n        def b_int(x=0):\n            try:\n                return int(x)\n            except (ValueError, TypeError):\n                raise PetalRuntimeError(f\"cannot convert {self.petal_debug(x)} to int\")\n\n        def b_float(x=0):\n            try:\n                return float(x)\n            except (ValueError, TypeError):\n                raise PetalRuntimeError(f\"cannot convert {self.petal_debug(x)} to float\")\n\n        def b_bool(x=False):\n            return self.is_truthy(x)\n\n        def b_sorted(x, reverse=False):\n            return sorted(x, reverse=bool(reverse))\n\n        def b_round(x, n=0):\n            return round(x, n) if n else round(x)\n\n        self.builtins = {\n            \"print\": b_print, \"len\": b_len, \"range\": range,\n            \"str\": b_str, \"int\": b_int, \"float\": b_float, \"bool\": b_bool,\n            \"type\": self.type_name, \"abs\": abs, \"min\": min, \"max\": max, \"sum\": sum,\n            \"sorted\": b_sorted, \"round\": b_round,\n            \"input\": lambda prompt=\"\": self.input_fn(prompt),\n        }\n        for name, fn in self.builtins.items():\n            self.globals.assign(name, fn)\n\n    # ---- statement execution --------------------------------------------\n\n    def run(self, program):\n        self.exec_block(program.statements, self.globals)\n\n    def exec_block(self, statements, env):\n        for stmt in statements:\n            self.exec_stmt(stmt, env)\n\n    def exec_stmt(self, node, env):\n        method = getattr(self, \"exec_\" + type(node).__name__, None)\n        if method is None:\n            raise PetalRuntimeError(f\"cannot execute {type(node).__name__}\", getattr(node, \"line\", None))\n        return method(node, env)\n\n    def exec_ExprStmt(self, node, env):\n        self.eval_expr(node.expr, env)\n\n    def exec_Assign(self, node, env):\n        value = self.eval_expr(node.value, env)\n        self.assign_target(node.target, value, env)\n\n    def exec_AugAssign(self, node, env):\n        current = self.eval_expr(node.target, env)\n        rhs = self.eval_expr(node.value, env)\n        value = self.apply_binop(node.op, current, rhs, node.line)\n        self.assign_target(node.target, value, env)\n\n    def assign_target(self, target, value, env):\n        if isinstance(target, Var):\n            env.assign(target.name, value)\n        elif isinstance(target, Index):\n            obj = self.eval_expr(target.obj, env)\n            idx = self.eval_expr(target.index, env)\n            try:\n                obj[idx] = value\n            except (TypeError, IndexError, KeyError) as e:\n                raise PetalRuntimeError(str(e), target.line)\n        else:\n            raise PetalRuntimeError(\"invalid assignment target\", getattr(target, \"line\", None))\n\n    def exec_If(self, node, env):\n        if self.is_truthy(self.eval_expr(node.cond, env)):\n            self.exec_block(node.body, env)\n            return\n        for econd, ebody in node.elifs:\n            if self.is_truthy(self.eval_expr(econd, env)):\n                self.exec_block(ebody, env)\n                return\n        if node.orelse:\n            self.exec_block(node.orelse, env)\n\n    def exec_While(self, node, env):\n        while self.is_truthy(self.eval_expr(node.cond, env)):\n            try:\n                self.exec_block(node.body, env)\n            except BreakSignal:\n                break\n            except ContinueSignal:\n                continue\n\n    def exec_For(self, node, env):\n        iterable = self.eval_expr(node.iterable, env)\n        try:\n            it = iter(iterable)\n        except TypeError:\n            raise PetalRuntimeError(f\"'{self.type_name(iterable)}' object is not iterable\", node.line)\n        for item in it:\n            env.assign(node.var, item)\n            try:\n                self.exec_block(node.body, env)\n            except BreakSignal:\n                break\n            except ContinueSignal:\n                continue\n\n    def exec_FunctionDef(self, node, env):\n        env.assign(node.name, PetalFunction(node.name, node.params, node.body, env))\n\n    def exec_Return(self, node, env):\n        value = self.eval_expr(node.value, env) if node.value is not None else None\n        raise ReturnSignal(value)\n\n    def exec_Break(self, node, env):\n        raise BreakSignal()\n\n    def exec_Continue(self, node, env):\n        raise ContinueSignal()\n\n    # ---- expression evaluation -------------------------------------------\n\n    def eval_expr(self, node, env):\n        method = getattr(self, \"eval_\" + type(node).__name__, None)\n        if method is None:\n            raise PetalRuntimeError(f\"cannot evaluate {type(node).__name__}\", getattr(node, \"line\", None))\n        return method(node, env)\n\n    def eval_NumLit(self, node, env): return node.value\n    def eval_StrLit(self, node, env): return node.value\n    def eval_BoolLit(self, node, env): return node.value\n    def eval_NoneLit(self, node, env): return None\n\n    def eval_FStrLit(self, node, env):\n        out = []\n        for kind, val in node.parts:\n            out.append(val if kind == \"str\" else self.petal_repr(self.eval_expr(val, env)))\n        return \"\".join(out)\n\n    def eval_ListLit(self, node, env):\n        return [self.eval_expr(e, env) for e in node.elements]\n\n    def eval_DictLit(self, node, env):\n        result = {}\n        for k, v in node.pairs:\n            result[self.eval_expr(k, env)] = self.eval_expr(v, env)\n        return result\n\n    def eval_Var(self, node, env):\n        return env.get(node.name, node.line)\n\n    def eval_UnaryOp(self, node, env):\n        if node.op == \"not\":\n            return not self.is_truthy(self.eval_expr(node.operand, env))\n        val = self.eval_expr(node.operand, env)\n        if node.op == \"-\":\n            if not isinstance(val, (int, float)) or isinstance(val, bool):\n                raise PetalRuntimeError(f\"cannot negate '{self.type_name(val)}'\", node.line)\n            return -val\n        return val  # unary '+'\n\n    def eval_LogicalOp(self, node, env):\n        left = self.eval_expr(node.left, env)\n        if node.op == \"and\":\n            return left if not self.is_truthy(left) else self.eval_expr(node.right, env)\n        return left if self.is_truthy(left) else self.eval_expr(node.right, env)\n\n    def eval_BinOp(self, node, env):\n        left = self.eval_expr(node.left, env)\n        right = self.eval_expr(node.right, env)\n        return self.apply_binop(node.op, left, right, node.line)\n\n    def apply_binop(self, op, left, right, line):\n        try:\n            if op == \"+\": return left + right\n            if op == \"-\": return left - right\n            if op == \"*\": return left * right\n            if op == \"/\":\n                if right == 0: raise ZeroDivisionError()\n                return left / right\n            if op == \"//\":\n                if right == 0: raise ZeroDivisionError()\n                return left // right\n            if op == \"%\":\n                if right == 0: raise ZeroDivisionError()\n                return left % right\n            if op == \"**\": return left ** right\n            if op == \"==\": return left == right\n            if op == \"!=\": return left != right\n            if op == \"<\": return left < right\n            if op == \">\": return left > right\n            if op == \"<=\": return left <= right\n            if op == \">=\": return left >= right\n            if op == \"in\": return left in right\n            if op == \"not in\": return left not in right\n        except TypeError:\n            raise PetalRuntimeError(\n                f\"unsupported operand types for '{op}': '{self.type_name(left)}' and '{self.type_name(right)}'\", line)\n        except ZeroDivisionError:\n            raise PetalRuntimeError(\"division by zero\", line)\n        raise PetalRuntimeError(f\"unknown operator '{op}'\", line)\n\n    def eval_Call(self, node, env):\n        args = [self.eval_expr(a, env) for a in node.args]\n        if isinstance(node.callee, Attribute):\n            obj = self.eval_expr(node.callee.obj, env)\n            return self.call_method(obj, node.callee.name, args, node.line)\n        callee = self.eval_expr(node.callee, env)\n        return self.call_function(callee, args, node.line)\n\n    def call_function(self, callee, args, line):\n        if isinstance(callee, PetalFunction):\n            call_env = Environment(callee.closure)\n            if len(args) != len(callee.params):\n                raise PetalRuntimeError(\n                    f\"{callee.name}() takes {len(callee.params)} argument(s) but {len(args)} were given\", line)\n            for pname, aval in zip(callee.params, args):\n                call_env.assign(pname, aval)\n            try:\n                self.exec_block(callee.body, call_env)\n            except ReturnSignal as r:\n                return r.value\n            return None\n        if callable(callee):\n            try:\n                return callee(*args)\n            except PetalError:\n                raise\n            except (TypeError, ValueError) as e:\n                raise PetalRuntimeError(f\"invalid arguments: {e}\", line)\n        raise PetalRuntimeError(f\"'{self.type_name(callee)}' object is not callable\", line)\n\n    def eval_Index(self, node, env):\n        obj = self.eval_expr(node.obj, env)\n        idx = self.eval_expr(node.index, env)\n        try:\n            return obj[idx]\n        except (IndexError, KeyError) as e:\n            raise PetalRuntimeError(f\"index error: {e}\", node.line)\n        except TypeError:\n            raise PetalRuntimeError(f\"'{self.type_name(obj)}' object is not subscriptable\", node.line)\n\n    def eval_Slice(self, node, env):\n        obj = self.eval_expr(node.obj, env)\n        start = self.eval_expr(node.start, env) if node.start is not None else None\n        stop = self.eval_expr(node.stop, env) if node.stop is not None else None\n        try:\n            return obj[start:stop]\n        except TypeError:\n            raise PetalRuntimeError(f\"'{self.type_name(obj)}' object is not sliceable\", node.line)\n\n    def eval_Attribute(self, node, env):\n        raise PetalRuntimeError(\n            f\"'.{node.name}' must be called as a method, e.g. .{node.name}(...)\", node.line)\n\n    # ---- built-in methods on list / str / dict ---------------------------\n\n    def call_method(self, obj, name, args, line):\n        try:\n            if isinstance(obj, list):\n                return self.list_method(obj, name, args, line)\n            if isinstance(obj, str):\n                return self.str_method(obj, name, args, line)\n            if isinstance(obj, dict):\n                return self.dict_method(obj, name, args, line)\n        except (IndexError, ValueError, KeyError) as e:\n            raise PetalRuntimeError(str(e), line)\n        raise PetalRuntimeError(f\"'{self.type_name(obj)}' object has no method '{name}'\", line)\n\n    def list_method(self, obj, name, args, line):\n        if name == \"append\": obj.append(args[0]); return None\n        if name == \"pop\": return obj.pop(*args)\n        if name == \"insert\": obj.insert(args[0], args[1]); return None\n        if name == \"remove\": obj.remove(args[0]); return None\n        if name == \"index\": return obj.index(args[0])\n        if name == \"count\": return obj.count(args[0])\n        if name == \"reverse\": obj.reverse(); return None\n        if name == \"sort\": obj.sort(reverse=self.is_truthy(args[0]) if args else False); return None\n        if name == \"clear\": obj.clear(); return None\n        raise PetalRuntimeError(f\"list has no method '{name}'\", line)\n\n    def str_method(self, obj, name, args, line):\n        if name == \"upper\": return obj.upper()\n        if name == \"lower\": return obj.lower()\n        if name == \"strip\": return obj.strip()\n        if name == \"split\": return obj.split(*args) if args else obj.split()\n        if name == \"join\": return obj.join(args[0])\n        if name == \"replace\": return obj.replace(args[0], args[1])\n        if name == \"startswith\": return obj.startswith(args[0])\n        if name == \"endswith\": return obj.endswith(args[0])\n        if name == \"find\": return obj.find(args[0])\n        raise PetalRuntimeError(f\"str has no method '{name}'\", line)\n\n    def dict_method(self, obj, name, args, line):\n        if name == \"keys\": return list(obj.keys())\n        if name == \"values\": return list(obj.values())\n        if name == \"items\": return [list(pair) for pair in obj.items()]\n        if name == \"get\": return obj.get(args[0], args[1] if len(args) > 1 else None)\n        if name == \"pop\": return obj.pop(*args)\n        raise PetalRuntimeError(f\"dict has no method '{name}'\", line)\n\n\n# =====================================================================\n# Public API + CLI\n# =====================================================================\n\ndef run_source(source, input_fn=None, output_fn=None):\n    \"\"\"Tokenize, parse, and execute Petal source code.\"\"\"\n    tokens = Lexer(source).tokenize()\n    program = Parser(tokens).parse_program()\n    interp = Interpreter(input_fn=input_fn, output_fn=output_fn)\n    interp.run(program)\n    return interp\n\n\ndef main():\n    if len(sys.argv) > 1:\n        path = sys.argv[1]\n        try:\n            with open(path, \"r\") as f:\n                source = f.read()\n        except OSError as e:\n            print(f\"could not read {path}: {e}\", file=sys.stderr)\n            sys.exit(1)\n        try:\n            run_source(source)\n        except PetalError as e:\n            print(f\"Petal Error -- {e.format()}\", file=sys.stderr)\n            sys.exit(1)\n    else:\n        repl()\n\n\ndef repl():\n    print(\"Petal REPL -- type 'exit' to quit, Ctrl+D to exit\")\n    interp = Interpreter()\n    while True:\n        try:\n            line = input(\"petal> \")\n        except (EOFError, KeyboardInterrupt):\n            print()\n            break\n        if line.strip() == \"exit\":\n            break\n        buffer = line\n        if line.rstrip().endswith(\":\"):\n            while True:\n                try:\n                    cont = input(\"  ...> \")\n                except (EOFError, KeyboardInterrupt):\n                    print()\n                    break\n                if cont.strip() == \"\":\n                    break\n                buffer += \"\\n\" + cont\n        if buffer.strip() == \"\":\n            continue\n        try:\n            tokens = Lexer(buffer).tokenize()\n            program = Parser(tokens).parse_program()\n            interp.run(program)\n        except PetalError as e:\n            print(f\"Petal Error -- {e.format()}\")\n\n\nif __name__ == \"__main__\":\n    main()\n";
+
+const EXAMPLES = {
+  hello: "name = \"world\"\nprint(f\"Hello, {name}!\")\nprint(\"1 + 2 =\", 1 + 2)\n",
+  fizzbuzz: "for i in range(1, 16):\n    if i % 15 == 0:\n        print(\"FizzBuzz\")\n    elif i % 3 == 0:\n        print(\"Fizz\")\n    elif i % 5 == 0:\n        print(\"Buzz\")\n    else:\n        print(i)\n",
+  fibonacci: "def fib(n):\n    if n <= 1:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nfor i in range(10):\n    print(fib(i))\n",
+  data: "fruits = [\"apple\", \"banana\", \"cherry\"]\nfruits.append(\"date\")\nprint(fruits)\nprint(fruits[1:3])\nprint(\"banana\" in fruits)\n\nperson = {\"name\": \"Abhijeet\", \"role\": \"builder\"}\nfor key in person:\n    print(key, \"->\", person[key])\n",
+};
+
+const codeEl = document.getElementById("code");
+const outputEl = document.getElementById("output");
+const runBtn = document.getElementById("run-btn");
+const clearBtn = document.getElementById("clear-btn");
+const statusDot = document.getElementById("status-dot");
+const statusText = document.getElementById("status-text");
+const petalIcon = document.getElementById("petal-icon");
+
+codeEl.value = EXAMPLES.hello;
+
+document.getElementById("examples").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-example]");
+  if (!btn) return;
+  codeEl.value = EXAMPLES[btn.dataset.example];
+  codeEl.focus();
+});
+
+clearBtn.addEventListener("click", () => {
+  outputEl.innerHTML = '<div class="line placeholder">Press Run to see what grows.</div>';
+});
+
+function appendOutput(text, kind) {
+  const placeholder = outputEl.querySelector(".placeholder");
+  if (placeholder) placeholder.remove();
+  const div = document.createElement("div");
+  div.className = "line " + (kind || "out");
+  div.textContent = text;
+  outputEl.appendChild(div);
+  outputEl.scrollTop = outputEl.scrollHeight;
+}
+
+function bloom(kind) {
+  petalIcon.classList.remove("bloom-success", "bloom-error", "state-error");
+  void petalIcon.offsetWidth;
+  petalIcon.classList.add(kind === "success" ? "bloom-success" : "bloom-error");
+  if (kind !== "success") petalIcon.classList.add("state-error");
+  setTimeout(() => petalIcon.classList.remove("state-error"), 900);
+}
+
+// ---- Python-aware editing: Tab indents, Enter auto-indents ----------
+
+codeEl.addEventListener("keydown", (e) => {
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const start = codeEl.selectionStart, end = codeEl.selectionEnd;
+    const value = codeEl.value;
+    if (e.shiftKey) {
+      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+      if (value.slice(lineStart, lineStart + 4) === "    ") {
+        codeEl.value = value.slice(0, lineStart) + value.slice(lineStart + 4);
+        codeEl.selectionStart = codeEl.selectionEnd = Math.max(lineStart, start - 4);
+      }
+    } else {
+      codeEl.value = value.slice(0, start) + "    " + value.slice(end);
+      codeEl.selectionStart = codeEl.selectionEnd = start + 4;
+    }
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    const start = codeEl.selectionStart;
+    const value = codeEl.value;
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const currentLine = value.slice(lineStart, start);
+    const indentMatch = currentLine.match(/^[ ]*/);
+    let indent = indentMatch ? indentMatch[0] : "";
+    if (currentLine.trim().endsWith(":")) indent += "    ";
+    const insertion = "\n" + indent;
+    codeEl.value = value.slice(0, start) + insertion + value.slice(start);
+    const pos = start + insertion.length;
+    codeEl.selectionStart = codeEl.selectionEnd = pos;
+  }
+});
+
+// ---- Pyodide bootstrap -------------------------------------------------
+
+let runPetal = null;
+
+async function init() {
+  try {
+    const pyodide = await loadPyodide({
+      indexURL: "https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.28.3/"
+    });
+    pyodide.setStdout({ batched: (msg) => appendOutput(msg, "out") });
+    pyodide.setStderr({ batched: (msg) => appendOutput(msg, "out") });
+    pyodide.runPython(PETAL_SOURCE);
+    pyodide.runPython(`
+def __petal_run_web__(source):
+    try:
+        run_source(source)
+        return "OK"
+    except PetalError as e:
+        return "ERR:" + e.format()
+    except RecursionError:
+        return "ERR:maximum recursion depth exceeded -- check for infinite recursion"
+    except Exception as e:
+        return "ERR:internal error: " + str(e)
+`);
+    runPetal = pyodide.globals.get("__petal_run_web__");
+    statusDot.classList.add("ready");
+    statusText.textContent = "ready";
+    runBtn.disabled = false;
+  } catch (err) {
+    statusText.textContent = "failed to load";
+    appendOutput("Could not start the Petal runtime: " + err, "error");
+  }
+}
+
+runBtn.addEventListener("click", () => {
+  if (!runPetal) return;
+  outputEl.innerHTML = "";
+  runBtn.disabled = true;
+  const code = codeEl.value;
+  setTimeout(() => {
+    let result;
+    try {
+      result = runPetal(code);
+    } catch (err) {
+      result = "ERR:internal error: " + err;
+    }
+    if (result === "OK") {
+      if (!outputEl.querySelector(".line")) {
+        appendOutput("(no output)", "placeholder");
+      }
+      bloom("success");
+    } else if (typeof result === "string" && result.startsWith("ERR:")) {
+      appendOutput("Petal Error — " + result.slice(4), "error");
+      bloom("error");
+    }
+    runBtn.disabled = false;
+  }, 10);
+});
+
+init();
+</script>
+</body>
+</html>

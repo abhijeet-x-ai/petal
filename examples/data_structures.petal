@@ -1,0 +1,32 @@
+# Lists
+fruits = ["apple", "banana", "cherry"]
+fruits.append("date")
+print(fruits)
+print(fruits[1:3])
+print("banana" in fruits)
+print(len(fruits))
+
+# Dicts
+person = {"name": "Abhijeet", "role": "builder"}
+person["projects"] = ["StoryTime.in", "ToolXHub", "SoundNest"]
+for key in person:
+    print(key, "->", person[key])
+
+# Closures -- functions remember the scope they were created in
+def make_adder(x):
+    def adder(y):
+        return x + y
+    return adder
+
+add5 = make_adder(5)
+print(add5(10))
+print(add5(20))
+
+# List comprehension-less loop building a list
+squares = []
+for n in range(1, 6):
+    squares.append(n * n)
+print(squares)
+
+total = sum(squares)
+print("total:", total)
