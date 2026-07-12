@@ -1,0 +1,9 @@
+# pages/api/greet.petal
+method = request.method
+name = request.query.get("name", "World")
+
+if method == "GET":
+    response.json({"message": f"Hello from Petal backend, {name}!"})
+else:
+    response.status(405)
+    response.json({"error": "Method not allowed"})

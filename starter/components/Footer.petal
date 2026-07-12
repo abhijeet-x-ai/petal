@@ -1,0 +1,16 @@
+---
+# Footer Component
+---
+<footer class="site-footer">
+    <div class="footer-inner">
+        <p class="footer-brand">Built with 🌸 Petal — the world's easiest web language</p>
+        <p class="footer-links">
+            <a href="https://github.com/abhijeet-x-ai/petal">GitHub</a>
+            <span class="separator">·</span>
+            <a href="/about">About</a>
+            <span class="separator">·</span>
+            <a href="/blog">Blog</a>
+        </p>
+        <p class="footer-copy">Open source · MIT License · Free forever</p>
+    </div>
+</footer>

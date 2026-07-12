@@ -1,0 +1,60 @@
+---
+title = "Welcome to Petal"
+description = "Petal is the world's easiest web language. Build SEO-optimized, fast-loading websites with simple, readable code."
+---
+
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Build websites the <span class="highlight">easy</span> way 🌸</h1>
+        <p class="hero-subtitle">Petal is a simple, Python-like language for building fast, SEO-optimized websites. No JavaScript, no build tools, no complexity.</p>
+        <div class="hero-actions">
+            <a href="https://github.com/abhijeet-x-ai/petal" class="btn btn-primary">Get Started →</a>
+            <a href="/about" class="btn btn-secondary">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <h2 class="section-title">Why developers love Petal</h2>
+    <div class="features-grid">
+        {component Card title="Easy to Learn" description="Python-like syntax that anyone can read and write. No complex setup, no configuration files, no build steps."}
+        {component Card title="SEO Built-In" description="Automatic meta tags, Open Graph, Twitter Cards, sitemaps, and JSON-LD structured data on every page."}
+        {component Card title="Zero JavaScript" description="Ships pure HTML and CSS by default — no JavaScript payload. Your pages load instantly."}
+        {component Card title="Fast Loading" description="Static site generation means your pages are pre-built HTML files. Fastest possible load times."}
+        {component Card title="Components" description="Build reusable UI components with simple template syntax. Headers, footers, cards — compose them freely."}
+        {component Card title="Open Source" description="MIT licensed, free forever. Built by the community, for the community." link="https://github.com/abhijeet-x-ai/petal"}
+    </div>
+</section>
+
+<section class="code-example">
+    <h2 class="section-title">Look how simple it is</h2>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-dot red"></span>
+            <span class="code-dot yellow"></span>
+            <span class="code-dot green"></span>
+            <span class="code-filename">pages/index.petal</span>
+        </div>
+        <pre class="code-content"><code>---
+title = "My Blog"
+posts = [
+    {"title": "Hello World", "slug": "hello"},
+    {"title": "Why Petal?", "slug": "why-petal"},
+]
+---
+
+&lt;h1&gt;{title}&lt;/h1&gt;
+{for post in posts}
+    &lt;a href="/blog/{post.slug}"&gt;{post.title}&lt;/a&gt;
+{endfor}</code></pre>
+    </div>
+</section>
+
+<section class="cta">
+    <h2>Ready to build something beautiful?</h2>
+    <p>Get started with Petal in under a minute.</p>
+    <div class="cta-code">
+        <code>python petal_cli.py new my-website</code>
+    </div>
+    <a href="https://github.com/abhijeet-x-ai/petal" class="btn btn-primary">View on GitHub →</a>
+</section>

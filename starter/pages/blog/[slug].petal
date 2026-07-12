@@ -1,0 +1,48 @@
+---
+# Dynamic blog post page
+# The 'pages' list tells Petal which pages to generate
+# Each dict must have a 'slug' key matching the [slug] in the filename
+
+pages = [
+    {
+        "slug": "getting-started",
+        "title": "Getting Started with Petal",
+        "date": "2026-07-01",
+        "description": "Learn how to build your first website with Petal in under 5 minutes.",
+        "content": "Petal makes web development simple. Here is how to get started:\n\n1. Clone the repository from GitHub\n2. Run python petal_cli.py new my-site to create a new project\n3. Run python petal_cli.py dev to start the development server\n4. Edit your pages in the pages/ directory\n5. Run python petal_cli.py build to generate static HTML\n\nThat is it! No npm, no webpack, no complex configuration. Just write your pages and build."
+    },
+    {
+        "slug": "why-petal",
+        "title": "Why We Built Petal",
+        "date": "2026-06-15",
+        "description": "The story behind Petal and why the web needs an easier way to build websites.",
+        "content": "The web has become incredibly complex. To build a simple blog, you need Node.js, npm, a framework like React or Next.js, a build tool, CSS preprocessors, and dozens of configuration files.\n\nPetal takes a different approach. We believe that building a website should be as simple as writing a document. With Petal, you write your content in a clean, Python-like syntax, and the framework handles everything else — SEO, performance, routing, and deployment.\n\nPetal is open source, MIT licensed, and free forever. We built it for developers who want simplicity without sacrificing quality."
+    },
+    {
+        "slug": "seo-guide",
+        "title": "SEO Made Simple with Petal",
+        "date": "2026-06-01",
+        "description": "How Petal automatically handles SEO so you can focus on content.",
+        "content": "Search Engine Optimization is critical for any website, but it is often tedious and easy to get wrong. Petal handles SEO automatically:\n\n- Title tags and meta descriptions from your frontmatter\n- Open Graph tags for social media sharing\n- Twitter Card tags for Twitter previews\n- JSON-LD structured data for rich search results\n- Automatic sitemap.xml generation\n- Automatic robots.txt generation\n- Semantic HTML structure\n- Fast page load times (zero JavaScript by default)\n\nAll you need to do is set a title and description in your page frontmatter. Petal does the rest."
+    },
+]
+---
+
+<article class="page-content blog-post">
+    <header class="post-header">
+        <a href="/blog" class="back-link">← Back to Blog</a>
+        <time class="post-date">{date}</time>
+        <h1>{title}</h1>
+        {if description}
+            <p class="post-subtitle">{description}</p>
+        {endif}
+    </header>
+    
+    <div class="post-body">
+        <p>{content}</p>
+    </div>
+
+    <footer class="post-footer">
+        <a href="/blog" class="btn btn-secondary">← All Posts</a>
+    </footer>
+</article>

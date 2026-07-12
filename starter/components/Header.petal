@@ -1,0 +1,16 @@
+---
+# Navigation Header Component
+---
+<header class="site-header">
+    <div class="header-inner">
+        <a href="/" class="logo">
+            <span class="logo-icon">🌸</span>
+            <span class="logo-text">Petal</span>
+        </a>
+        <nav class="nav">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/about" class="nav-link">About</a>
+            <a href="/blog" class="nav-link">Blog</a>
+        </nav>
+    </div>
+</header>

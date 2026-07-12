@@ -1,0 +1,29 @@
+---
+title = "About Petal"
+description = "Learn about Petal — the world's easiest language for building SEO-optimized websites."
+---
+
+<article class="page-content">
+    <h1>About Petal 🌸</h1>
+    
+    <p class="lead">Petal is a small, Python-flavored programming language designed to make web development as easy as possible — while producing fast, SEO-optimized websites.</p>
+
+    <h2>The Vision</h2>
+    <p>We believe building a website shouldn't require learning dozens of tools, frameworks, and configuration files. Petal combines the simplicity of Python with the performance philosophy of Astro.js to create something new: a language where building a beautiful, fast, SEO-friendly website is genuinely <em>easy</em>.</p>
+
+    <h2>Key Principles</h2>
+    <ul>
+        <li><strong>Simplicity First</strong> — If a beginner can't understand it, we simplify it.</li>
+        <li><strong>SEO by Default</strong> — Meta tags, sitemaps, structured data — automatic on every page.</li>
+        <li><strong>Zero JavaScript</strong> — Your pages ship as pure HTML/CSS. No JS bundle, no hydration overhead.</li>
+        <li><strong>One Language</strong> — Frontend templates, backend logic, configuration — all in Petal's clean syntax.</li>
+        <li><strong>No Build Complexity</strong> — No webpack, no npm, no node_modules. Just Python + Petal.</li>
+    </ul>
+
+    <h2>How It Works</h2>
+    <p>Petal uses a <strong>Static Site Generator (SSG)</strong> architecture. You write your pages as <code>.petal</code> component files with server-side logic (frontmatter) and HTML templates. At build time, Petal compiles everything into static HTML files that can be hosted anywhere — GitHub Pages, Netlify, Vercel, or any basic web server.</p>
+
+    <h2>Open Source</h2>
+    <p>Petal is <strong>MIT licensed</strong> and free forever. The entire interpreter is a single readable Python file (~1,200 lines). We welcome contributions from everyone.</p>
+    <p><a href="https://github.com/abhijeet-x-ai/petal" class="btn btn-primary">View on GitHub →</a></p>
+</article>

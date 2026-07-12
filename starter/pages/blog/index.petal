@@ -1,0 +1,28 @@
+---
+title = "Blog"
+description = "Latest posts from the Petal blog — tutorials, updates, and web development tips."
+
+posts = [
+    {"slug": "getting-started", "title": "Getting Started with Petal", "date": "2026-07-01", "excerpt": "Learn how to build your first website with Petal in under 5 minutes. No prior experience needed."},
+    {"slug": "why-petal", "title": "Why We Built Petal", "date": "2026-06-15", "excerpt": "The story behind Petal — why the web needs an easier, more accessible way to build websites."},
+    {"slug": "seo-guide", "title": "SEO Made Simple with Petal", "date": "2026-06-01", "excerpt": "How Petal automatically handles SEO so you can focus on content instead of meta tags."},
+]
+---
+
+<section class="page-content">
+    <h1>Blog</h1>
+    <p class="lead">Tutorials, updates, and tips for building with Petal.</p>
+
+    <div class="blog-list">
+        {for post in posts}
+        <article class="blog-preview">
+            <time class="blog-date">{post.date}</time>
+            <h2 class="blog-title">
+                <a href="/blog/{post.slug}">{post.title}</a>
+            </h2>
+            <p class="blog-excerpt">{post.excerpt}</p>
+            <a href="/blog/{post.slug}" class="blog-read-more">Read more →</a>
+        </article>
+        {endfor}
+    </div>
+</section>

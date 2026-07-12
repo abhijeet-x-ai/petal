@@ -1,0 +1,16 @@
+---
+# Card Component — Reusable card with title, description, and optional link
+---
+<article class="card">
+    <div class="card-body">
+        {if title}
+            <h3 class="card-title">{title}</h3>
+        {endif}
+        {if description}
+            <p class="card-desc">{description}</p>
+        {endif}
+        {if link}
+            <a href="{link}" class="card-link">Read more →</a>
+        {endif}
+    </div>
+</article>
