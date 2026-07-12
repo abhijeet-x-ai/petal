@@ -2,26 +2,16 @@
 """
 Petal -- a small, Python-flavored scripting language.
 
-Copyright (c) 2026 Petal Contributors
-License: MIT (See LICENSE file for details)
-
 Single-file implementation: lexer, parser, tree-walking interpreter,
 and a CLI/REPL. See README.md for the language reference.
 
-USAGE:
+Usage:
     python3 petal.py script.petal      # run a file
     python3 petal.py                   # start the REPL
-
-DISCLAIMER:
-    This software is provided "AS IS" without any warranty. See LICENSE file
-    for full terms and conditions. The authors are not responsible for any
-    damages or losses caused by using this software.
-
-REPOSITORY:
-    https://github.com/abhijeet-x-ai/petal
 """
 
 import sys
+
 
 # =====================================================================
 # Errors
